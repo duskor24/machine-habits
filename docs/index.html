@@ -1,0 +1,511 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="theme-color" content="#0b0b0b" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
+  <title>Machine Habits</title>
+  <style>
+    :root { color-scheme: light dark; }
+    body{
+      font-family:-apple-system,system-ui,Segoe UI,Roboto,Arial,sans-serif;margin:0;
+      background: radial-gradient(1200px 600px at 20% -10%, rgba(255,255,255,.10), transparent 60%),
+                  radial-gradient(900px 500px at 90% 0%, rgba(255,255,255,.08), transparent 55%),
+                  rgba(0,0,0,.96);
+      color:rgba(255,255,255,.92);
+    }
+    .wrap{max-width:560px;margin:0 auto;padding:18px 16px 28px;}
+    .topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;}
+    .title{display:flex;flex-direction:column;gap:2px;}
+    h1{margin:0;font-size:20px;letter-spacing:.2px;}
+    .sub{margin:0;font-size:13px;opacity:.72;}
+    .card{
+      background:rgba(255,255,255,.07);
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:18px;
+      box-shadow:0 10px 30px rgba(0,0,0,.35);
+      padding:14px;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      margin:12px 0;
+    }
+    .grid2{display:grid;grid-template-columns:110px 1fr;gap:14px;align-items:center;}
+    .ring{width:106px;height:106px;border-radius:999px;
+      background: conic-gradient(rgba(255,255,255,.92) var(--p), rgba(255,255,255,.10) 0);
+      display:flex;align-items:center;justify-content:center;position:relative;
+    }
+    .ring::after{content:"";width:84px;height:84px;border-radius:999px;background:rgba(0,0,0,.65);
+      border:1px solid rgba(255,255,255,.10);position:absolute;}
+    .ring .ringText{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;}
+    .ring .big{font-size:22px;font-weight:700;}
+    .ring .small{font-size:12px;opacity:.75;}
+    .metricRow{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;}
+    .pill{padding:7px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.12);
+      background:rgba(255,255,255,.06);font-size:12px;opacity:.92;}
+    .pill b{font-weight:700;}
+    .weekRow{display:flex;gap:8px;margin-top:12px;justify-content:space-between;}
+    .day{width:100%;display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 6px;
+      border-radius:14px;border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.05);}
+    .dow{font-size:11px;opacity:.72;}
+    .dot{width:12px;height:12px;border-radius:999px;border:1px solid rgba(255,255,255,.25);
+      background:rgba(255,255,255,.06);}
+    .day.done .dot{background:rgba(255,255,255,.92);border-color:rgba(255,255,255,.92);}
+    .day.today{outline:2px solid rgba(255,255,255,.18);}
+    .sectionTitle{margin:8px 2px 10px;font-size:13px;opacity:.72;}
+    .habit{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 10px;border-radius:14px;
+      border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.05);}
+    .habit label{display:flex;align-items:center;gap:10px;font-size:16px;}
+    input[type="checkbox"]{width:22px;height:22px;}
+    .btnRow{display:flex;gap:10px;flex-wrap:wrap;}
+    button{border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:11px 12px;
+      background:rgba(255,255,255,.06);color:rgba(255,255,255,.92);font-size:14px;-webkit-tap-highlight-color:transparent;}
+    button:active{transform:scale(.98);}
+    .muted{font-size:12px;opacity:.72;line-height:1.35;margin:10px 2px 0;}
+    .cta{margin-top:10px;border-radius:16px;padding:12px;border:1px solid rgba(255,255,255,.12);
+      background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.04));font-size:13px;opacity:.92;}
+    .cta b{font-weight:700;}
+    .row{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;}
+    .switch{position:relative;width:44px;height:26px;border-radius:999px;background:rgba(255,255,255,.10);
+      border:1px solid rgba(255,255,255,.14);cursor:pointer;flex:0 0 auto;}
+    .knob{position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:999px;background:rgba(255,255,255,.85);
+      transition: transform .18s ease;}
+    .switch.on{background:rgba(255,255,255,.22);}
+    .switch.on .knob{transform:translateX(18px);}
+    .times{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;}
+    .timeItem{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px;border-radius:14px;
+      border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.05);}
+    .timeItem input{width:120px;border-radius:12px;border:1px solid rgba(255,255,255,.16);
+      background:rgba(0,0,0,.35);color:rgba(255,255,255,.92);padding:10px;font-size:14px;}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="title">
+        <h1>Machine Habits</h1>
+        <p class="sub" id="subtitle">—</p>
+      </div>
+      <div class="pill">Wochen‑Streak: <b id="weekStreak">0</b></div>
+    </div>
+
+    <div class="card">
+      <div class="grid2">
+        <div class="ring" id="ring" style="--p:0deg">
+          <div class="ringText">
+            <div class="big" id="weekScore">0/5</div>
+            <div class="small">diese Woche</div>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:14px; opacity:.9; line-height:1.35" id="motivation">—</div>
+          <div class="metricRow">
+            <div class="pill">Tage: <b id="daysDone">0</b>/7</div>
+            <div class="pill">Heute zählt: <b id="todayCounts">nein</b></div>
+            <div class="pill">Woche: <b id="weekLabel">—</b></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="weekRow" id="weekRow"></div>
+
+      <div class="cta">
+        <b>Regel:</b> Dein Streak hält, wenn du in einer Woche an <b>mind. 5 von 7 Tagen</b> <b>irgendein</b> Habit abgehakt hast.
+      </div>
+    </div>
+
+    <div class="sectionTitle">Heute</div>
+    <div class="card" id="habits"></div>
+
+    <div class="card">
+      <div class="btnRow">
+        <button id="btnAdd">+ Habit</button>
+        <button id="btnResetToday">Heute zurücksetzen</button>
+      </div>
+      <p class="muted">
+        iPhone: Safari → Teilen → <b>Zum Home‑Bildschirm</b>. (Liste bearbeiten beeinflusst den Streak nie.)
+      </p>
+    </div>
+
+    <div class="sectionTitle">Push‑Reminder</div>
+    <div class="card" id="pushCard">
+      <div class="row">
+        <div class="pill" id="pushStatus">Push: —</div>
+        <div class="btnRow">
+          <button id="btnEnablePush">Push aktivieren</button>
+          <button id="btnTestPush">Test‑Push</button>
+        </div>
+      </div>
+
+      <div style="height:10px"></div>
+
+      <div class="row">
+        <div style="font-size:13px;opacity:.85">Reminder aktiv</div>
+        <div class="switch on" id="swEnabled" role="switch" aria-checked="true"><div class="knob"></div></div>
+      </div>
+      <div style="height:10px"></div>
+      <div class="row">
+        <div style="font-size:13px;opacity:.85">Nur erinnern, wenn heute noch nichts abgehakt</div>
+        <div class="switch on" id="swOnlyIfNotDone" role="switch" aria-checked="true"><div class="knob"></div></div>
+      </div>
+
+      <div class="times" style="margin-top:12px">
+        <div class="timeItem">
+          <div style="font-size:13px;opacity:.85">Morgens</div>
+          <input type="time" id="tMorning" value="07:45">
+        </div>
+        <div class="timeItem">
+          <div style="font-size:13px;opacity:.85">Mittags</div>
+          <input type="time" id="tNoon" value="12:30">
+        </div>
+        <div class="timeItem">
+          <div style="font-size:13px;opacity:.85">Abends</div>
+          <input type="time" id="tEvening" value="20:30">
+        </div>
+        <div class="timeItem">
+          <div style="font-size:13px;opacity:.85">Extra (optional)</div>
+          <input type="time" id="tExtra" value="">
+        </div>
+      </div>
+
+      <div class="btnRow" style="margin-top:12px">
+        <button id="btnSaveTimes">Zeiten speichern</button>
+      </div>
+
+      <p class="muted" id="backendHint"></p>
+    </div>
+  </div>
+
+  <script>
+    // ========= CONFIG =========
+    // HIER deine Vercel-URL rein (mit https://)
+    const API_BASE = "PASTE_YOUR_VERCEL_URL_HERE";
+    // ==========================
+
+    const $ = (id) => document.getElementById(id);
+    const KEY = "machine_habits_weekly_v2";
+
+    const pad2 = (n) => String(n).padStart(2,"0");
+    function ymd(d=new Date()){ return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`; }
+    function addDays(d, n){ const x=new Date(d); x.setDate(x.getDate()+n); return x; }
+    function startOfWeekMonday(d){
+      const x = new Date(d);
+      const day = x.getDay();
+      const diff = (day === 0 ? -6 : 1 - day);
+      x.setDate(x.getDate()+diff);
+      x.setHours(0,0,0,0);
+      return x;
+    }
+    function formatDE(d){ return d.toLocaleDateString("de-DE",{ weekday:"short", day:"2-digit", month:"2-digit" }); }
+    function weekLabel(d){ const s=startOfWeekMonday(d), e=addDays(s,6); return `${formatDE(s)} – ${formatDE(e)}`; }
+
+    function defaultState(){
+      return {
+        habits: [
+          { id: crypto.randomUUID(), name:"Liegestütze", doneToday:false },
+          { id: crypto.randomUUID(), name:"10 Min Mobility", doneToday:false },
+          { id: crypto.randomUUID(), name:"Spaziergang 20 Min", doneToday:false }
+        ],
+        history: {}, // { "YYYY-MM-DD": { didAny:boolean } }
+        lastDate: ymd()
+      };
+    }
+    function load(){
+      const raw = localStorage.getItem(KEY);
+      if (!raw) return defaultState();
+      try { return JSON.parse(raw); } catch { return defaultState(); }
+    }
+    function save(st){ localStorage.setItem(KEY, JSON.stringify(st)); }
+
+    function ensureDay(st, dayStr){
+      if (!st.history[dayStr]) st.history[dayStr] = { didAny:false };
+      return st.history[dayStr];
+    }
+
+    function rolloverIfNewDay(st){
+      const today = ymd();
+      if (st.lastDate === today) return st;
+      st.habits = st.habits.map(h => ({...h, doneToday:false}));
+      st.lastDate = today;
+      save(st);
+      return st;
+    }
+
+    function weekDays(d=new Date()){
+      const s=startOfWeekMonday(d);
+      return Array.from({length:7}, (_,i)=> addDays(s,i));
+    }
+    function countDaysDoneInWeek(st, d=new Date()){
+      let c=0;
+      for (const dd of weekDays(d)){
+        const k=ymd(dd);
+        if (st.history[k]?.didAny) c++;
+      }
+      return c;
+    }
+    function weekQualified(st, d){ return countDaysDoneInWeek(st,d) >= 5; }
+    function weeklyStreak(st){
+      const today=new Date();
+      const thisWeekStart=startOfWeekMonday(today);
+      const lastWeekStart=addDays(thisWeekStart,-7);
+      let streak=0;
+      let cursor=lastWeekStart;
+      while (true){
+        if (!weekQualified(st,cursor)) break;
+        streak++;
+        cursor=addDays(cursor,-7);
+      }
+      return streak;
+    }
+    function motivationText(daysDone){
+      if (daysDone >= 5) return "Woche gesichert. Alles ab jetzt ist Bonus.";
+      if (daysDone === 4) return "Noch ein Tag, dann ist die Woche locked.";
+      if (daysDone === 3) return "Noch zwei Tage, dann hält der Streak.";
+      if (daysDone === 2) return "Nice. Noch drei Tage bis zur sicheren Woche.";
+      if (daysDone === 1) return "Guter Start. Noch vier Tage bis zur sicheren Woche.";
+      return "Start easy: ein Haken heute reicht.";
+    }
+    function escapeHtml(s){ return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+    function setSwitch(el, on){
+      el.classList.toggle("on", !!on);
+      el.setAttribute("aria-checked", on ? "true":"false");
+    }
+    function getSwitch(el){ return el.classList.contains("on"); }
+
+    function apiConnected(){
+      return !API_BASE.includes("PASTE_YOUR_VERCEL_URL_HERE") && API_BASE.startsWith("https://");
+    }
+
+    async function postJSON(url, body){
+      const r = await fetch(url, { method:"POST", headers:{ "Content-Type":"application/json" }, body: JSON.stringify(body) });
+      const data = await r.json().catch(()=> ({}));
+      return { ok: r.ok, status: r.status, data };
+    }
+
+    async function refreshPushStatus(){
+      let txt = "Push: —";
+      if (!("Notification" in window)) txt = "Push: nicht unterstützt";
+      else if (Notification.permission === "granted") txt = "Push: erlaubt ✅";
+      else if (Notification.permission === "denied") txt = "Push: blockiert ❌ (iOS Einstellungen)";
+      else txt = "Push: aus";
+      $("pushStatus").textContent = txt;
+
+      $("backendHint").innerHTML = apiConnected()
+        ? `Backend verbunden: <b>${API_BASE}</b>`
+        : `Backend fehlt. Setze in <b>docs/index.html</b> <code>API_BASE</code> auf deine Vercel‑URL (mit https://).`;
+    }
+
+    function render(st){
+      const today=new Date();
+      const todayStr=ymd(today);
+      const dayObj=ensureDay(st,todayStr);
+
+      $("subtitle").textContent = new Date().toLocaleDateString("de-DE",{ weekday:"long", day:"2-digit", month:"2-digit", year:"numeric" });
+
+      const daysDone=countDaysDoneInWeek(st,today);
+      $("daysDone").textContent = daysDone;
+      $("todayCounts").textContent = dayObj.didAny ? "ja":"nein";
+      $("weekLabel").textContent = weekLabel(today);
+
+      $("weekStreak").textContent = weeklyStreak(st);
+      $("motivation").textContent = motivationText(daysDone);
+
+      const goal=5;
+      const p=Math.min(daysDone,goal)/goal;
+      $("weekScore").textContent = `${Math.min(daysDone,goal)}/${goal}`;
+      $("ring").style.setProperty("--p", `${Math.round(p*360)}deg`);
+
+      const row=$("weekRow");
+      row.innerHTML="";
+      const dow=["Mo","Di","Mi","Do","Fr","Sa","So"];
+      const days=weekDays(today);
+      days.forEach((d,i)=>{
+        const k=ymd(d);
+        const done=!!st.history[k]?.didAny;
+        const isToday=k===todayStr;
+        const el=document.createElement("div");
+        el.className="day"+(done?" done":"")+(isToday?" today":"");
+        el.innerHTML=`<div class="dow">${dow[i]}</div><div class="dot"></div>`;
+        row.appendChild(el);
+      });
+
+      const wrap=$("habits");
+      wrap.innerHTML="";
+      st.habits.forEach(h=>{
+        const div=document.createElement("div");
+        div.className="habit";
+        div.innerHTML=`
+          <label>
+            <input type="checkbox" ${h.doneToday?"checked":""} />
+            <span>${escapeHtml(h.name)}</span>
+          </label>
+          <button aria-label="delete">✕</button>
+        `;
+        const cb=div.querySelector("input");
+        const del=div.querySelector("button");
+
+        cb.addEventListener("change", ()=>{
+          h.doneToday = cb.checked;
+
+          // Heute zählt NUR, wenn aktuell mindestens ein Habit angehakt ist
+          const any = st.habits.some(x => x.doneToday);
+          ensureDay(st, todayStr).didAny = any;
+
+          save(st);
+          render(st);
+
+          if (apiConnected()){
+            postJSON(`${API_BASE}/api/done`, { date: todayStr, done: any }).catch(()=>{});
+          }
+        });
+
+        del.addEventListener("click", ()=>{
+          st.habits = st.habits.filter(x => x.id !== h.id);
+
+          const any = st.habits.some(x => x.doneToday);
+          ensureDay(st, todayStr).didAny = any;
+
+          save(st);
+          render(st);
+
+          if (apiConnected()){
+            postJSON(`${API_BASE}/api/done`, { date: todayStr, done: any }).catch(()=>{});
+          }
+        });
+
+        wrap.appendChild(div);
+      });
+    }
+
+    async function registerSW(){
+      if (!("serviceWorker" in navigator)) throw new Error("No serviceWorker");
+      return navigator.serviceWorker.register("./sw.js");
+    }
+    function urlBase64ToUint8Array(base64String){
+      const padding="=".repeat((4-(base64String.length%4))%4);
+      const base64=(base64String+padding).replace(/-/g,"+").replace(/_/g,"/");
+      const rawData=atob(base64);
+      return Uint8Array.from([...rawData].map((c)=>c.charCodeAt(0)));
+    }
+
+    async function enablePush(){
+      if (!apiConnected()){ alert("Backend fehlt. Setze zuerst API_BASE."); return; }
+      const reg = await registerSW();
+      const perm = await Notification.requestPermission();
+      if (perm !== "granted"){ alert("Ohne Erlaubnis keine Pushs."); await refreshPushStatus(); return; }
+
+      const r = await fetch(`${API_BASE}/api/public-key`);
+      if (!r.ok){ alert("Backend nicht erreichbar (public-key)."); return; }
+      const { publicKey } = await r.json();
+
+      const sub = await reg.pushManager.subscribe({
+        userVisibleOnly:true,
+        applicationServerKey: urlBase64ToUint8Array(publicKey),
+      });
+
+      const s = await fetch(`${API_BASE}/api/subscribe`, {
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body: JSON.stringify(sub),
+      });
+      const data = await s.json().catch(()=> ({}));
+      if (!s.ok){
+        alert("Subscription speichern fehlgeschlagen: "+JSON.stringify(data));
+        return;
+      }
+
+      alert("Push aktiviert ✅ (Wichtig: App vom Homescreen öffnen)");
+      await refreshPushStatus();
+    }
+
+    async function testPush(){
+      if (!apiConnected()){ alert("Backend fehlt."); return; }
+      const res = await postJSON(`${API_BASE}/api/send-test`, {});
+      if (!res.ok){
+        alert("Test-Push fehlgeschlagen: "+JSON.stringify(res.data));
+        return;
+      }
+      alert("Test-Push gesendet ✅ (Mitteilungszentrale checken)");
+    }
+
+    async function loadSettings(){
+      if (!apiConnected()) return;
+      const r = await fetch(`${API_BASE}/api/settings`);
+      if (!r.ok) return;
+      const s = await r.json().catch(()=>null);
+      if (!s) return;
+
+      setSwitch($("swEnabled"), !!s.enabled);
+      setSwitch($("swOnlyIfNotDone"), !!s.onlyIfNotDoneToday);
+
+      const times = Array.isArray(s.times) ? s.times : [];
+      $("tMorning").value = times[0] || "07:45";
+      $("tNoon").value = times[1] || "12:30";
+      $("tEvening").value = times[2] || "20:30";
+      $("tExtra").value = times[3] || "";
+    }
+
+    async function saveTimes(){
+      if (!apiConnected()){ alert("Backend fehlt."); return; }
+      const enabled = getSwitch($("swEnabled"));
+      const onlyIfNotDoneToday = getSwitch($("swOnlyIfNotDone"));
+      const times = [
+        $("tMorning").value,
+        $("tNoon").value,
+        $("tEvening").value,
+        $("tExtra").value
+      ].filter(Boolean);
+
+      const res = await postJSON(`${API_BASE}/api/settings`, { enabled, onlyIfNotDoneToday, times });
+      if (!res.ok){
+        alert("Speichern fehlgeschlagen: "+JSON.stringify(res.data));
+        return;
+      }
+      alert("Zeiten gespeichert ✅");
+    }
+
+    // boot
+    let state = rolloverIfNewDay(load());
+    render(state);
+
+    $("btnAdd").addEventListener("click", ()=>{
+      const name = prompt("Neues Habit (kurz):", "Wasser trinken");
+      if (!name) return;
+      state.habits.push({ id: crypto.randomUUID(), name: name.trim(), doneToday:false });
+      save(state);
+      render(state);
+    });
+
+    $("btnResetToday").addEventListener("click", ()=>{
+      state.habits = state.habits.map(h=>({ ...h, doneToday:false }));
+      ensureDay(state, ymd(new Date())).didAny = false;
+      save(state);
+      render(state);
+
+      if (apiConnected()){
+        postJSON(`${API_BASE}/api/done`, { date: ymd(new Date()), done: false }).catch(()=>{});
+      }
+    });
+
+    $("swEnabled").addEventListener("click", ()=> setSwitch($("swEnabled"), !getSwitch($("swEnabled"))));
+    $("swOnlyIfNotDone").addEventListener("click", ()=> setSwitch($("swOnlyIfNotDone"), !getSwitch($("swOnlyIfNotDone"))));
+
+    $("btnEnablePush").addEventListener("click", enablePush);
+    $("btnTestPush").addEventListener("click", testPush);
+    $("btnSaveTimes").addEventListener("click", saveTimes);
+
+    if ("serviceWorker" in navigator){ navigator.serviceWorker.register("./sw.js").catch(()=>{}); }
+
+    refreshPushStatus();
+    loadSettings();
+
+    setInterval(()=>{
+      const before = state.lastDate;
+      state = rolloverIfNewDay(state);
+      if (state.lastDate !== before) render(state);
+    }, 30_000);
+  </script>
+</body>
+</html>
