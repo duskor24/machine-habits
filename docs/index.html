@@ -274,9 +274,10 @@
     }
     function getSwitch(el){ return el.classList.contains("on"); }
 
-    function apiConnected(){
-      return !API_BASE.includes("https://machine-habits-v2.vercel.app") && API_BASE.startsWith("https://");
-    }
+   function apiConnected(){
+  return typeof API_BASE === "string" && API_BASE.startsWith("https://");
+}
+
 
     async function postJSON(url, body){
       const r = await fetch(url, { method:"POST", headers:{ "Content-Type":"application/json" }, body: JSON.stringify(body) });
