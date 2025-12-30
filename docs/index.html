@@ -9,117 +9,335 @@
   <title>Machine Habits</title>
   <style>
     :root { color-scheme: light dark; }
-    body { font-family: -apple-system, system-ui, Segoe UI, Roboto, Arial, sans-serif; margin: 0; padding: 20px; max-width: 520px; }
-    h1 { margin: 0 0 6px; font-size: 22px; }
-    .sub { opacity: .7; margin: 0 0 18px; }
-    .card { border: 1px solid rgba(127,127,127,.25); border-radius: 14px; padding: 14px; margin: 12px 0; }
-    .row { display:flex; align-items:center; justify-content:space-between; gap: 10px; }
-    label { display:flex; align-items:center; gap: 10px; font-size: 18px; }
+    body {
+      font-family: -apple-system, system-ui, Segoe UI, Roboto, Arial, sans-serif;
+      margin: 0;
+      background: radial-gradient(1200px 600px at 20% -10%, rgba(255,255,255,.10), transparent 60%),
+                  radial-gradient(900px 500px at 90% 0%, rgba(255,255,255,.08), transparent 55%),
+                  rgba(0,0,0,.96);
+      color: rgba(255,255,255,.92);
+    }
+    .wrap { max-width: 560px; margin: 0 auto; padding: 18px 16px 28px; }
+    .topbar { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom: 14px; }
+    .title { display:flex; flex-direction:column; gap:2px; }
+    h1 { margin: 0; font-size: 20px; letter-spacing: .2px; }
+    .sub { margin:0; font-size: 13px; opacity:.72; }
+
+    .card {
+      background: rgba(255,255,255,.07);
+      border: 1px solid rgba(255,255,255,.10);
+      border-radius: 18px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.35);
+      padding: 14px;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      margin: 12px 0;
+    }
+
+    .grid2 { display:grid; grid-template-columns: 110px 1fr; gap: 14px; align-items:center; }
+    .ring {
+      width: 106px; height: 106px; border-radius: 999px;
+      background: conic-gradient(rgba(255,255,255,.92) var(--p), rgba(255,255,255,.10) 0);
+      display:flex; align-items:center; justify-content:center;
+      position: relative;
+    }
+    .ring::after{
+      content:"";
+      width: 84px; height: 84px; border-radius: 999px;
+      background: rgba(0,0,0,.65);
+      border: 1px solid rgba(255,255,255,.10);
+      position:absolute;
+    }
+    .ring .ringText{
+      position:relative;
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      gap:2px;
+    }
+    .ring .big { font-size: 22px; font-weight: 700; letter-spacing:.2px; }
+    .ring .small { font-size: 12px; opacity:.75; }
+
+    .metricRow { display:flex; flex-wrap:wrap; gap:8px; margin-top: 8px; }
+    .pill {
+      padding: 7px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.06);
+      font-size: 12px;
+      opacity:.92;
+    }
+    .pill b { font-weight: 700; }
+
+    .weekRow { display:flex; gap: 8px; margin-top: 12px; justify-content:space-between; }
+    .day {
+      width: 100%;
+      display:flex; flex-direction:column; align-items:center; gap:6px;
+      padding: 10px 6px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.05);
+    }
+    .dow { font-size: 11px; opacity:.72; }
+    .dot {
+      width: 12px; height: 12px; border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.25);
+      background: rgba(255,255,255,.06);
+    }
+    .day.done .dot { background: rgba(255,255,255,.92); border-color: rgba(255,255,255,.92); }
+    .day.today { outline: 2px solid rgba(255,255,255,.18); }
+
+    .sectionTitle { margin: 8px 2px 10px; font-size: 13px; opacity:.72; }
+    .habit { display:flex; align-items:center; justify-content:space-between; gap: 10px; padding: 10px 10px; border-radius: 14px;
+             border: 1px solid rgba(255,255,255,.10); background: rgba(255,255,255,.05); }
+    .habit label { display:flex; align-items:center; gap: 10px; font-size: 16px; }
     input[type="checkbox"] { width: 22px; height: 22px; }
-    button { border: 1px solid rgba(127,127,127,.25); border-radius: 12px; padding: 10px 12px; background: transparent; font-size: 14px; }
+    .btnRow { display:flex; gap: 10px; flex-wrap:wrap; }
+    button {
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 14px;
+      padding: 11px 12px;
+      background: rgba(255,255,255,.06);
+      color: rgba(255,255,255,.92);
+      font-size: 14px;
+      -webkit-tap-highlight-color: transparent;
+    }
     button:active { transform: scale(.98); }
-    .small { font-size: 13px; opacity: .8; line-height: 1.35; }
-    .pill { padding: 6px 10px; border-radius: 999px; border: 1px solid rgba(127,127,127,.25); font-size: 13px; opacity: .9; }
-    .grid { display:grid; grid-template-columns: 1fr; gap: 10px; }
-    .warn { opacity:.9; font-size: 13px; line-height:1.35; }
-    code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 12px; }
+    .muted { font-size: 12px; opacity:.72; line-height:1.35; margin: 10px 2px 0; }
+
+    .cta {
+      margin-top: 10px;
+      border-radius: 16px;
+      padding: 12px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.04));
+      font-size: 13px;
+      opacity:.92;
+    }
+    .cta b { font-weight: 700; }
   </style>
 </head>
 <body>
-  <h1>Machine Habits</h1>
-  <p class="sub">Haken setzen. Streak halten. Nicht diskutieren. 😄</p>
-
-  <div class="card">
-    <div class="row">
-      <div class="pill" id="todayLabel"></div>
-      <div class="pill">Streak: <b id="streak">0</b> Tage</div>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="title">
+        <h1>Machine Habits</h1>
+        <p class="sub" id="subtitle">—</p>
+      </div>
+      <div class="pill">Weekly streak: <b id="weekStreak">0</b></div>
     </div>
-    <p class="small" style="margin:10px 0 0">
-      iPhone: Safari → Teilen → <b>Zum Home-Bildschirm</b>. Dann fühlt’s sich wie eine App an.
-    </p>
-  </div>
 
-  <div class="card grid" id="habits"></div>
+    <div class="card">
+      <div class="grid2">
+        <div class="ring" id="ring" style="--p:0deg">
+          <div class="ringText">
+            <div class="big" id="weekScore">0/5</div>
+            <div class="small">this week</div>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:14px; opacity:.9; line-height:1.35" id="motivation">
+            —
+          </div>
+          <div class="metricRow">
+            <div class="pill">Days done: <b id="daysDone">0</b>/7</div>
+            <div class="pill">Today counts: <b id="todayCounts">no</b></div>
+            <div class="pill">Week: <b id="weekLabel">—</b></div>
+          </div>
+        </div>
+      </div>
 
-  <div class="card">
-    <div class="row" style="flex-wrap:wrap">
-      <button id="btnAdd">+ Habit</button>
-      <button id="btnReset">Heute zurücksetzen</button>
-      <button id="btnPush">Push aktivieren</button>
-      <button id="btnTestPush">Test-Push</button>
+      <div class="weekRow" id="weekRow"></div>
+
+      <div class="cta" id="cta">
+        <b>Rule:</b> You keep the streak if you hit <b>5 days</b> in a week. One checkmark per day is enough.
+      </div>
     </div>
-    <p class="small" id="pushHelp" style="margin:10px 0 0"></p>
-    <p class="warn" id="apiHelp" style="margin:8px 0 0"></p>
+
+    <div class="sectionTitle">Today</div>
+    <div class="card" id="habits"></div>
+
+    <div class="card">
+      <div class="btnRow">
+        <button id="btnAdd">+ Habit</button>
+        <button id="btnResetToday">Reset today</button>
+      </div>
+      <p class="muted">
+        iPhone: Safari → Teilen → <b>Zum Home-Bildschirm</b>. (Weekly streak is edit-proof: adding/removing habits never changes history.)
+      </p>
+    </div>
+
   </div>
 
   <script>
-    // ========= CONFIG =========
-    // After deploying the backend to Vercel, paste its URL here, e.g.:
-    // const API_BASE = "https://machine-habits-lzqdgvp4j-duskor24s-projects.vercel.app";
-    const API_BASE = "https://machine-habits-lzqdgvp4j-duskor24s-projects.vercel.app";
-    // ==========================
-
     const $ = (id) => document.getElementById(id);
-    const key = "machine_habits_v2";
+    const KEY = "machine_habits_weekly_v1";
 
-    function ymd(d = new Date()) {
-      const yyyy = d.getFullYear();
-      const mm = String(d.getMonth()+1).padStart(2,"0");
-      const dd = String(d.getDate()).padStart(2,"0");
-      return `${yyyy}-${mm}-${dd}`;
+    // --- date helpers ---
+    const pad2 = (n) => String(n).padStart(2,"0");
+    function ymd(d=new Date()){
+      return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
     }
-    function prettyDate(d = new Date()) {
-      return d.toLocaleDateString("de-DE", { weekday:"short", day:"2-digit", month:"2-digit", year:"numeric" });
+    function parseYMD(s){
+      const [y,m,da] = s.split("-").map(Number);
+      return new Date(y, m-1, da);
+    }
+    function addDays(d, n){
+      const x = new Date(d); x.setDate(x.getDate()+n); return x;
+    }
+    function startOfWeekMonday(d){
+      // Monday as week start (Germany)
+      const x = new Date(d);
+      const day = x.getDay(); // 0 Sun ... 1 Mon ...
+      const diff = (day === 0 ? -6 : 1 - day);
+      x.setDate(x.getDate() + diff);
+      x.setHours(0,0,0,0);
+      return x;
+    }
+    function formatDE(d){
+      return d.toLocaleDateString("de-DE",{ weekday:"short", day:"2-digit", month:"2-digit" });
+    }
+    function isoWeekLabel(d){
+      const s = startOfWeekMonday(d);
+      const e = addDays(s,6);
+      return `${formatDE(s)} – ${formatDE(e)}`;
     }
 
-    function load() {
-      const raw = localStorage.getItem(key);
-      if (!raw) {
-        return {
-          habits: [
-            { id: crypto.randomUUID(), name: "Liegestütze (10–50)", done:false },
-            { id: crypto.randomUUID(), name: "10 Min Mobility", done:false },
-            { id: crypto.randomUUID(), name: "Spaziergang 20 Min", done:false }
-          ],
-          lastDate: ymd(),
-          streak: 0
-        };
-      }
-      return JSON.parse(raw);
+    // Week key: YYYY-Www based on Monday start (simple & stable)
+    function weekKey(d){
+      const s = startOfWeekMonday(d);
+      // compute ISO-ish week number by taking Thursday reference
+      const th = addDays(s, 3);
+      const yearStart = startOfWeekMonday(new Date(th.getFullYear(),0,4));
+      const weekNo = Math.floor((startOfWeekMonday(th) - yearStart) / (7*24*3600*1000)) + 1;
+      return `${th.getFullYear()}-W${pad2(weekNo)}`;
     }
-    function save(state) { localStorage.setItem(key, JSON.stringify(state)); }
-    function allDone(state) { return state.habits.length > 0 && state.habits.every(h => h.done); }
 
-    function rolloverIfNewDay(state) {
+    // --- state ---
+    function defaultState(){
+      return {
+        habits: [
+          { id: crypto.randomUUID(), name: "Liegestütze", doneToday:false },
+          { id: crypto.randomUUID(), name: "10 Min Mobility", doneToday:false },
+          { id: crypto.randomUUID(), name: "Spaziergang 20 Min", doneToday:false }
+        ],
+        history: {},      // { "YYYY-MM-DD": { didAny: true } }
+        lastDate: ymd()
+      };
+    }
+    function load(){
+      const raw = localStorage.getItem(KEY);
+      if (!raw) return defaultState();
+      try { return JSON.parse(raw); } catch { return defaultState(); }
+    }
+    function save(st){ localStorage.setItem(KEY, JSON.stringify(st)); }
+
+    function ensureDay(st, dayStr){
+      if (!st.history[dayStr]) st.history[dayStr] = { didAny: false };
+      return st.history[dayStr];
+    }
+
+    // Daily rollover: reset checkboxes, do NOT change history.
+    function rolloverIfNewDay(st){
       const today = ymd();
-      if (state.lastDate === today) return state;
+      if (st.lastDate === today) return st;
 
-      if (allDone(state)) state.streak += 1;
-      else state.streak = 0;
-
-      state.habits = state.habits.map(h => ({...h, done:false}));
-      state.lastDate = today;
-      save(state);
-      return state;
+      // reset todays checkboxes
+      st.habits = st.habits.map(h => ({...h, doneToday:false}));
+      st.lastDate = today;
+      save(st);
+      return st;
     }
 
-    function escapeHtml(s) {
-      return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    // --- weekly stats ---
+    function weekDays(d=new Date()){
+      const s = startOfWeekMonday(d);
+      return Array.from({length:7}, (_,i)=> addDays(s,i));
+    }
+    function countDaysDoneInWeek(st, d=new Date()){
+      const days = weekDays(d);
+      let c=0;
+      for (const dd of days){
+        const k = ymd(dd);
+        if (st.history[k]?.didAny) c++;
+      }
+      return c;
+    }
+    function weekQualified(st, d){ return countDaysDoneInWeek(st,d) >= 5; }
+
+    function weeklyStreak(st){
+      // Count consecutive qualified weeks ending at LAST COMPLETED week (Sun of last week).
+      const today = new Date();
+      const thisWeekStart = startOfWeekMonday(today);
+      const lastWeekStart = addDays(thisWeekStart, -7);
+
+      let streak=0;
+      let cursor = lastWeekStart;
+
+      while (true){
+        if (!weekQualified(st, cursor)) break;
+        streak++;
+        cursor = addDays(cursor, -7);
+      }
+      return streak;
     }
 
-    function render(state) {
-      $("todayLabel").textContent = prettyDate(new Date());
-      $("streak").textContent = state.streak;
+    function motivationText(daysDone){
+      if (daysDone >= 5) return "Week secured. Everything now is bonus.";
+      if (daysDone === 4) return "One more day and the week is locked.";
+      if (daysDone === 3) return "Two more days to secure the week.";
+      if (daysDone === 2) return "Nice. Three more days and you keep the streak.";
+      if (daysDone === 1) return "Good start. Four more days to lock it.";
+      return "Start the week: one checkmark today is enough.";
+    }
 
+    // --- rendering ---
+    function render(st){
+      const today = new Date();
+      const todayStr = ymd(today);
+      const dayObj = ensureDay(st, todayStr);
+
+      $("subtitle").textContent = new Date().toLocaleDateString("de-DE",{ weekday:"long", day:"2-digit", month:"2-digit", year:"numeric" });
+
+      const daysDone = countDaysDoneInWeek(st, today);
+      $("daysDone").textContent = daysDone;
+      $("todayCounts").textContent = dayObj.didAny ? "yes" : "no";
+      $("weekLabel").textContent = isoWeekLabel(today);
+
+      const streakWeeks = weeklyStreak(st);
+      $("weekStreak").textContent = streakWeeks;
+
+      $("motivation").textContent = motivationText(daysDone);
+
+      // progress ring: 0..5 mapped to 0..360
+      const goal = 5;
+      const p = Math.min(daysDone, goal) / goal;
+      $("weekScore").textContent = `${Math.min(daysDone,goal)}/${goal}`;
+      $("ring").style.setProperty("--p", `${Math.round(p*360)}deg`);
+
+      // week row
+      const w = weekDays(today);
+      const row = $("weekRow");
+      row.innerHTML = "";
+      const dow = ["Mo","Di","Mi","Do","Fr","Sa","So"];
+      w.forEach((d,i)=>{
+        const k = ymd(d);
+        const done = !!st.history[k]?.didAny;
+        const isToday = k === todayStr;
+
+        const el = document.createElement("div");
+        el.className = "day" + (done ? " done":"") + (isToday ? " today":"");
+        el.innerHTML = `<div class="dow">${dow[i]}</div><div class="dot"></div>`;
+        row.appendChild(el);
+      });
+
+      // habits
       const wrap = $("habits");
       wrap.innerHTML = "";
-
-      state.habits.forEach(h => {
+      st.habits.forEach(h=>{
         const div = document.createElement("div");
-        div.className = "row";
+        div.className = "habit";
         div.innerHTML = `
           <label>
-            <input type="checkbox" ${h.done ? "checked" : ""} />
+            <input type="checkbox" ${h.doneToday ? "checked":""} />
             <span>${escapeHtml(h.name)}</span>
           </label>
           <button aria-label="delete">✕</button>
@@ -127,95 +345,61 @@
         const cb = div.querySelector("input");
         const del = div.querySelector("button");
 
-        cb.addEventListener("change", () => { h.done = cb.checked; save(state); });
-        del.addEventListener("click", () => { state.habits = state.habits.filter(x => x.id !== h.id); save(state); render(state); });
+        cb.addEventListener("change", ()=>{
+          h.doneToday = cb.checked;
+
+          // once a day counts, it stays counted for that day
+          if (cb.checked) {
+            ensureDay(st, todayStr).didAny = true;
+          }
+          save(st);
+          render(st);
+        });
+
+        del.addEventListener("click", ()=>{
+          st.habits = st.habits.filter(x => x.id !== h.id);
+          save(st);
+          render(st);
+        });
 
         wrap.appendChild(div);
       });
-
-      $("pushHelp").textContent = pushText();
-      $("apiHelp").innerHTML = apiText();
     }
 
-    function pushText() {
-      if (!("Notification" in window)) return "Push: Dein Browser kann keine Notifications.";
-      if (Notification.permission === "granted") return "Push: erlaubt ✅ (Tipp: iPhone braucht Home-Screen-Installation für echte Pushs).";
-      if (Notification.permission === "denied") return "Push: blockiert ❌ (iOS Einstellungen → Website-Benachrichtigungen / Safari).";
-      return "Push: aus. Tippe „Push aktivieren“.";
+    function escapeHtml(s){
+      return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
     }
 
-    function apiText() {
-      if (API_BASE.includes("PASTE_YOUR_VERCEL_URL_HERE")) {
-        return `Noch kein Push-Server verbunden.<br>1) Backend auf Vercel deployen → 2) URL hier in <code>index.html</code> eintragen → 3) neu hochladen.`;
-      }
-      return `Backend verbunden: <code>${API_BASE}</code>`;
-    }
-
-    async function registerSW() {
-      if (!("serviceWorker" in navigator)) throw new Error("No serviceWorker");
-      return navigator.serviceWorker.register("./sw.js");
-    }
-
-    function urlBase64ToUint8Array(base64String) {
-      const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
-      const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
-      const rawData = atob(base64);
-      return Uint8Array.from([...rawData].map((c) => c.charCodeAt(0)));
-    }
-
-    async function enablePush() {
-      if (API_BASE.includes("PASTE_YOUR_VERCEL_URL_HERE")) {
-        alert("Erst Backend-URL einsetzen (siehe Hinweis unten).");
-        return;
-      }
-
-      const reg = await registerSW();
-
-      const perm = await Notification.requestPermission();
-      if (perm !== "granted") { alert("Ohne Erlaubnis keine Pushs."); return; }
-
-      const r = await fetch(`${API_BASE}/api/public-key`);
-      if (!r.ok) { alert("Backend nicht erreichbar."); return; }
-      const { publicKey } = await r.json();
-
-      const sub = await reg.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(publicKey),
-      });
-
-      const s = await fetch(`${API_BASE}/api/subscribe`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(sub),
-      });
-      if (!s.ok) { alert("Konnte Subscription nicht speichern."); return; }
-
-      alert("Push aktiviert ✅ (iPhone: als App am Homescreen installieren!)");
-      render(state);
-    }
-
-    async function testPush() {
-      if (API_BASE.includes("PASTE_YOUR_VERCEL_URL_HERE")) { alert("Erst Backend-URL einsetzen."); return; }
-      const r = await fetch(`${API_BASE}/api/send-test`, { method: "POST" });
-      if (!r.ok) { alert("Test-Push fehlgeschlagen."); return; }
-      alert("Test-Push gesendet ✅");
-    }
-
-    // boot
+    // --- actions ---
     let state = rolloverIfNewDay(load());
+
+    $("btnAdd").addEventListener("click", ()=>{
+      const name = prompt("Neues Habit (kurz):", "Wasser trinken");
+      if (!name) return;
+      state.habits.push({ id: crypto.randomUUID(), name: name.trim(), doneToday:false });
+      save(state);
+      render(state);
+    });
+
+    $("btnResetToday").addEventListener("click", ()=>{
+      state.habits = state.habits.map(h=>({ ...h, doneToday:false }));
+      save(state);
+      render(state);
+    });
+
     render(state);
 
-    $("btnAdd").addEventListener("click", () => {
-      const name = prompt("Neues Habit (kurz):", "10 Min Mobility");
-      if (!name) return;
-      state.habits.push({ id: crypto.randomUUID(), name: name.trim(), done:false });
-      save(state); render(state);
-    });
-    $("btnReset").addEventListener("click", () => { state.habits = state.habits.map(h => ({...h, done:false})); save(state); render(state); });
-    $("btnPush").addEventListener("click", enablePush);
-    $("btnTestPush").addEventListener("click", testPush);
+    // keep daily reset consistent even if app stays open overnight
+    setInterval(()=>{
+      const before = state.lastDate;
+      state = rolloverIfNewDay(state);
+      if (state.lastDate !== before) render(state);
+    }, 30_000);
 
-    if ("serviceWorker" in navigator) { navigator.serviceWorker.register("./sw.js").catch(()=>{}); }
+    // service worker register (for PWA installability)
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("./sw.js").catch(()=>{});
+    }
   </script>
 </body>
 </html>
