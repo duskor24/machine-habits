@@ -1,38 +1,51 @@
-let mem = new Map();
+// api/_store.js
+async function getRestConfig() {
+  const url =
+    process.env.UPSTASH_REDIS_REST_URL ||
+    process.env.KV_REST_API_URL;
 
-async function upstashFetch(path) {
-  // Support BOTH env var styles:
-  // 1) Manual Upstash vars: UPSTASH_REDIS_REST_URL / UPSTASH_REDIS_REST_TOKEN
-  // 2) Vercel Upstash integration vars: KV_REST_API_URL / KV_REST_API_TOKEN
-  const url = process.env.UPSTASH_REDIS_REST_URL || process.env.KV_REST_API_URL;
-  const token = process.env.UPSTASH_REDIS_REST_TOKEN || process.env.KV_REST_API_TOKEN;
-  if (!url || !token) return null;
+  const token =
+    process.env.UPSTASH_REDIS_REST_TOKEN ||
+    process.env.KV_REST_API_TOKEN;
 
+  return { url, token };
+}
+
+async function upstashFetch(path, { url, token }) {
   const r = await fetch(`${url}/${path}`, {
-    headers: { Authorization: `Bearer ${token}` }
+    headers: { Authorization: `Bearer ${token}` },
   });
-  if (!r.ok) throw new Error(`Upstash error: ${r.status}`);
+  if (!r.ok) {
+    const txt = await r.text().catch(() => "");
+    throw new Error(`Upstash error ${r.status}: ${txt}`);
+  }
   return r.json();
 }
 
 export async function kvSet(key, value) {
-  const url = process.env.UPSTASH_REDIS_REST_URL || process.env.KV_REST_API_URL;
-  const token = process.env.UPSTASH_REDIS_REST_TOKEN || process.env.KV_REST_API_TOKEN;
-  if (url && token) {
-    await upstashFetch(`set/${encodeURIComponent(key)}/${encodeURIComponent(JSON.stringify(value))}`);
-    return;
+  const { url, token } = await getRestConfig();
+  if (!url || !token) {
+    throw new Error(
+      "Redis REST env vars missing. Need KV_REST_API_URL + KV_REST_API_TOKEN (or UPSTASH_REDIS_REST_URL/TOKEN)."
+    );
   }
-  mem.set(key, value);
+
+  // store JSON safely
+  const v = encodeURIComponent(JSON.stringify(value));
+  await upstashFetch(`set/${encodeURIComponent(key)}/${v}`, { url, token });
 }
 
 export async function kvGet(key) {
-  const url = process.env.UPSTASH_REDIS_REST_URL || process.env.KV_REST_API_URL;
-  const token = process.env.UPSTASH_REDIS_REST_TOKEN || process.env.KV_REST_API_TOKEN;
-  if (url && token) {
-    const data = await upstashFetch(`get/${encodeURIComponent(key)}`);
-    const val = data?.result;
-    if (!val) return null;
-    try { return JSON.parse(val); } catch { return null; }
+  const { url, token } = await getRestConfig();
+  if (!url || !token) {
+    throw new Error(
+      "Redis REST env vars missing. Need KV_REST_API_URL + KV_REST_API_TOKEN (or UPSTASH_REDIS_REST_URL/TOKEN)."
+    );
   }
-  return mem.get(key) ?? null;
+
+  const data = await upstashFetch(`get/${encodeURIComponent(key)}`, { url, token });
+  const val = data?.result;
+  if (!val) return null;
+
+  try { return JSON.parse(val); } catch { return null; }
 }
