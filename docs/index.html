@@ -275,7 +275,7 @@
     function getSwitch(el){ return el.classList.contains("on"); }
 
     function apiConnected(){
-      return !API_BASE.includes("PASTE_YOUR_VERCEL_URL_HERE") && API_BASE.startsWith("https://");
+      return !API_BASE.includes("https://machine-habits-v2.vercel.app") && API_BASE.startsWith("https://");
     }
 
     async function postJSON(url, body){
