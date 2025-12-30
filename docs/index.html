@@ -183,6 +183,10 @@
     const API_BASE = "https://machine-habits-v2.vercel.app";
     // ==========================
 
+    function apiConnected() {
+  return API_BASE && API_BASE.startsWith("https://");
+}
+
     const $ = (id) => document.getElementById(id);
     const KEY = "machine_habits_weekly_v2";
 
